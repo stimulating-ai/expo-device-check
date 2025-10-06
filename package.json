@@ -2,10 +2,9 @@
   "name": "expo-device-check",
   "version": "1.0.0",
   "description": "Expo module providing access to the iOS DeviceCheck API.",
-  "main": "build/index.js",
-  "module": "build/index.js",
-  "types": "build/index.d.ts",
-  "source": "src/index.ts",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
   "sideEffects": false,
   "scripts": {
     "build": "expo-module build",
