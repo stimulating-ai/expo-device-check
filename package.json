@@ -1,6 +1,6 @@
 {
   "name": "expo-device-check",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Expo module providing access to the iOS DeviceCheck API.",
   "main": "build/index.js",
   "module": "build/index.js",

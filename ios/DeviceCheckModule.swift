@@ -11,12 +11,13 @@ public class DeviceCheckModule: Module {
       DeviceCheckModule.isDeviceCheckSupported
     }
 
-    AsyncFunction("getDeviceToken") { () throws -> String in
+    AsyncFunction("getDeviceToken") { (promise: Promise) in
       guard DeviceCheckModule.isDeviceCheckSupported else {
-        throw DeviceCheckError.unsupportedPlatform
+        promise.reject(DeviceCheckError.unsupportedPlatform)
+        return
       }
 
-      return try await DeviceCheckModule.generateToken()
+      DeviceCheckModule.generateToken(promise)
     }
   }
 
@@ -29,29 +30,28 @@ public class DeviceCheckModule: Module {
     return false
   }
 
-  private static func generateToken() async throws -> String {
+  private static func generateToken(_ promise: Promise) {
     #if canImport(DeviceCheck)
     guard #available(iOS 11.0, *) else {
-      throw DeviceCheckError.unsupportedPlatform
+      promise.reject(DeviceCheckError.unsupportedPlatform)
+      return
     }
 
-    return try await withCheckedThrowingContinuation { continuation in
-      DCDevice.current.generateToken { token, error in
-        if let error {
-          continuation.resume(throwing: DeviceCheckError.tokenFailed(reason: error.localizedDescription))
-          return
-        }
-
-        guard let token, !token.isEmpty else {
-          continuation.resume(throwing: DeviceCheckError.tokenFailed(reason: "Token creation failure"))
-          return
-        }
-
-        continuation.resume(returning: token.base64EncodedString())
+    DCDevice.current.generateToken { token, error in
+      if let error {
+        promise.reject(DeviceCheckError.tokenFailed(reason: error.localizedDescription))
+        return
       }
+
+      guard let token, !token.isEmpty else {
+        promise.reject(DeviceCheckError.tokenFailed(reason: "Token creation failure"))
+        return
+      }
+
+      promise.resolve(token.base64EncodedString())
     }
     #else
-    throw DeviceCheckError.unsupportedPlatform
+    promise.reject(DeviceCheckError.unsupportedPlatform)
     #endif
   }
 }
